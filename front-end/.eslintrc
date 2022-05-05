@@ -1,0 +1,7 @@
+{
+  "plugins": ["cypress"],
+  "extends": ["plugin:cypress/recommended", "react-app", "react-app/jest"],
+  "rules": {
+    "jest/expect-expect": "off"
+  }
+}
