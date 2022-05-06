@@ -9,8 +9,11 @@ describe("Add recommendation", () => {
     cy.get("input[name=name]").type(recommendation.name);
     cy.get("input[name=link]").type(recommendation.youtubeLink);
 
+    cy.intercept("GET", "/recommendations").as("getRecommendations");
     cy.get("button[name=recommend]").click();
-    cy.wait(500);
-    cy.get("div[name=song-name]").first().contains(recommendation.name);
+
+    cy.wait("@getRecommendations").then((_) =>
+      cy.get("div[name=song-name]").first().contains(recommendation.name)
+    );
   });
 });

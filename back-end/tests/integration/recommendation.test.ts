@@ -1,5 +1,8 @@
 import supertest from "supertest";
+
 import app from "../../src/app";
+import { prisma } from "../../src/database";
+import { recommendationBodyFactory } from "../factories/recommendationFactory";
 
 describe("Song recommendations", () => {
   const BASE_PATH = "/recommendations";
@@ -9,7 +12,7 @@ describe("Song recommendations", () => {
       const { body, status } = await supertest(app).get(BASE_PATH);
 
       expect(typeof body).toBe("object");
-      expect(body.length).toBeDefined();
+      expect(body.length).toBe(10);
       expect(status).toBe(200);
     });
   });
@@ -32,7 +35,7 @@ describe("Song recommendations", () => {
 
   describe("GET /top/:amount", () => {
     it("should return the top amount recommendations and status 200", async () => {
-      const amount = 3;
+      const amount = 5;
       const { body, status } = await supertest(app).get(
         `${BASE_PATH}/top/${amount}`
       );
@@ -40,9 +43,14 @@ describe("Song recommendations", () => {
       expect(typeof body).toBe("object");
       expect(body.length).toBe(amount);
 
-      expect(body[0].score).toBe(10);
-      expect(body[1].score).toBe(9);
-      expect(body[2].score).toBe(8);
+      const recommendations = await prisma.recommendation.findMany({
+        orderBy: { score: "desc" },
+        take: amount,
+      });
+
+      for (let i = 0; i < amount; i++) {
+        expect(body[i].score).toEqual(recommendations[i].score);
+      }
 
       expect(status).toBe(200);
     });
@@ -50,18 +58,82 @@ describe("Song recommendations", () => {
 
   describe("GET /:id", () => {
     it("should return the specified recommendation and status 200", async () => {
-      const id = 28;
+      const id = Math.floor(1 + 15 * Math.random()); // from 1 to 15
       const { body, status } = await supertest(app).get(`${BASE_PATH}/${id}`);
 
       expect(typeof body).toBe("object");
       expect(body.length).toBeUndefined();
 
-      const { name, youtubeLink, score } = body;
+      const expected = await prisma.recommendation.findUnique({
+        where: { id },
+      });
+
+      const { name, youtubeLink, score } = expected;
       expect(body.id).toBe(id);
-      expect(name).toBe("qui aspernatur quo");
-      expect(youtubeLink).toBe("https://www.youtube.com/watch?v=1S5xqe3zw8Y");
-      expect(score).toBe(8);
+      expect(body.name).toBe(name);
+      expect(body.youtubeLink).toBe(youtubeLink);
+      expect(body.score).toBe(score);
       expect(status).toBe(200);
+    });
+  });
+
+  describe("POST /", () => {
+    it("should return status 201 and create a new recommendation", async () => {
+      const recommendation = recommendationBodyFactory();
+      const { name } = recommendation;
+      const { status } = await supertest(app)
+        .post(BASE_PATH)
+        .send(recommendation);
+
+      expect(status).toBe(201);
+
+      const inserted = await prisma.recommendation.findUnique({
+        where: {
+          name,
+        },
+      });
+
+      const { youtubeLink, score } = inserted;
+      expect(youtubeLink).toBe(recommendation.youtubeLink);
+      expect(score).toBe(0);
+    });
+  });
+
+  describe("POST /:id/upvote", () => {
+    it("should return status 200 and upvote the specified recommendation", async () => {
+      const id = Math.floor(1 + 15 * Math.random()); // from 1 to 15
+
+      const before = await prisma.recommendation.findUnique({ where: { id } });
+
+      const { status } = await supertest(app).post(`${BASE_PATH}/${id}/upvote`);
+
+      expect(status).toBe(200);
+
+      const after = await prisma.recommendation.findUnique({ where: { id } });
+
+      expect(after.name).toBe(before.name);
+      expect(after.youtubeLink).toBe(before.youtubeLink);
+      expect(after.score).toBe(before.score + 1);
+    });
+  });
+
+  describe("POST /:id/downvote", () => {
+    it("should return status 200 and downvote the specified recommendation", async () => {
+      const id = Math.floor(1 + 15 * Math.random()); // from 1 to 15
+
+      const before = await prisma.recommendation.findUnique({ where: { id } });
+
+      const { status } = await supertest(app).post(
+        `${BASE_PATH}/${id}/downvote`
+      );
+
+      expect(status).toBe(200);
+
+      const after = await prisma.recommendation.findUnique({ where: { id } });
+
+      expect(after.name).toBe(before.name);
+      expect(after.youtubeLink).toBe(before.youtubeLink);
+      expect(after.score).toBe(before.score - 1);
     });
   });
 });
