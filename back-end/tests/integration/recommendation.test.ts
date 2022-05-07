@@ -4,7 +4,16 @@ import app from "../../src/app";
 import { prisma } from "../../src/database";
 import { recommendationBodyFactory } from "../factories/recommendationFactory";
 
-describe("Song recommendations", () => {
+describe("Song recommendation integration tests", () => {
+  beforeAll(async () => {
+    // Prune DB
+    await prisma.$executeRaw`DELETE FROM recommendations WHERE id > 15;`;
+  });
+
+  afterAll(async () => {
+    await prisma.$disconnect();
+  });
+
   const BASE_PATH = "/recommendations";
 
   describe("GET /", () => {
@@ -122,6 +131,16 @@ describe("Song recommendations", () => {
       const id = Math.floor(1 + 15 * Math.random()); // from 1 to 15
 
       const before = await prisma.recommendation.findUnique({ where: { id } });
+
+      // Prevent deletion
+      if (before.score < -4) {
+        await prisma.recommendation.update({
+          where: { id },
+          data: { score: -4 },
+        });
+
+        before.score = -4;
+      }
 
       const { status } = await supertest(app).post(
         `${BASE_PATH}/${id}/downvote`

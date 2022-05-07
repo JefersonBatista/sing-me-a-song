@@ -9,7 +9,8 @@
     "dev-test": "npx dotenv-cli -e .env.test nodemon src/server.ts",
     "test": "NODE_OPTIONS=--experimental-vm-modules npx dotenv-cli -e .env.test jest -i",
     "migrate-dev": "npx prisma migrate dev",
-    "migrate-test": "npx dotenv-cli -e .env.test prisma migrate dev"
+    "migrate-test": "npx dotenv-cli -e .env.test prisma migrate dev",
+    "seed-db": "npx dotenv-cli -e .env.test prisma db seed"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
