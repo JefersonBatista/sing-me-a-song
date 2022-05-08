@@ -53,11 +53,18 @@ describe("Song recommendation service unit tests", () => {
 
   describe("Upvote song recommendation", () => {
     it("should call update score from repository once", async () => {
-      const id = 15; // should be an existent id
+      const id = 30;
+
+      jest.spyOn(recommendationRepository, "find").mockResolvedValue({
+        id,
+        name: "funk do pão de queijo",
+        youtubeLink: "youtu.be/bananinha",
+        score: 33,
+      });
 
       const update = jest
         .spyOn(recommendationRepository, "updateScore")
-        .mockResolvedValue(null);
+        .mockResolvedValue(null); // resolved value doesn't matter
 
       await recommendationService.upvote(id);
 
@@ -66,7 +73,9 @@ describe("Song recommendation service unit tests", () => {
     });
 
     it("should throw 'not_found' called with a non-existing id", async () => {
-      const id = 0; // should be a non-existent id
+      const id = 50;
+
+      jest.spyOn(recommendationRepository, "find").mockResolvedValue(null);
 
       const update = jest
         .spyOn(recommendationRepository, "updateScore")
@@ -84,7 +93,14 @@ describe("Song recommendation service unit tests", () => {
 
   describe("Downvote song recommendation", () => {
     it("should call update score from repository once", async () => {
-      const id = 10; // should be an existent id
+      const id = 10;
+
+      jest.spyOn(recommendationRepository, "find").mockResolvedValue({
+        id,
+        name: "funk do pão de queijo",
+        youtubeLink: "youtu.be/bananinha",
+        score: 9,
+      });
 
       const update = jest
         .spyOn(recommendationRepository, "updateScore")
@@ -102,7 +118,14 @@ describe("Song recommendation service unit tests", () => {
     });
 
     it("should eliminate recommendation with score less than -5", async () => {
-      const id = 10; // should be an existent id
+      const id = 10;
+
+      jest.spyOn(recommendationRepository, "find").mockResolvedValue({
+        id,
+        name: "funk do pão de queijo",
+        youtubeLink: "youtu.be/bananinha",
+        score: -5,
+      });
 
       const update = jest
         .spyOn(recommendationRepository, "updateScore")
@@ -126,7 +149,9 @@ describe("Song recommendation service unit tests", () => {
     });
 
     it("should throw 'not_found' called with a non-existing id", async () => {
-      const id = 0; // should be a non-existent id
+      const id = 100;
+
+      jest.spyOn(recommendationRepository, "find").mockResolvedValue(null);
 
       const update = jest
         .spyOn(recommendationRepository, "updateScore")

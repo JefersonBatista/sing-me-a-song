@@ -101,7 +101,7 @@ FNDA:1,create
 FNDA:2,findAll
 FNDA:1,getAmountByScore
 FNDA:2,getFindAllFilter
-FNDA:8,find
+FNDA:3,find
 FNDA:1,findByName
 FNDA:2,updateScore
 FNDA:0,remove
@@ -112,7 +112,7 @@ DA:27,1
 DA:36,2
 DA:38,1
 DA:40,1
-DA:46,8
+DA:46,3
 DA:52,1
 DA:58,2
 DA:67,0
@@ -200,8 +200,8 @@ DA:70,1
 DA:71,1
 DA:74,0
 DA:78,1
-DA:79,1
-DA:82,0
+DA:79,0
+DA:82,1
 DA:85,2
 LF:30
 LH:27
@@ -210,9 +210,9 @@ BRDA:31,1,0,1
 BRDA:38,2,0,2
 BRDA:56,3,0,0
 BRDA:70,4,0,1
-BRDA:78,5,0,1
+BRDA:78,5,0,0
 BRF:6
-BRH:5
+BRH:4
 end_of_record
 TN:
 SF:src/utils/errorUtils.ts
