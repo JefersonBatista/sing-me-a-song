@@ -2,7 +2,9 @@ import { jest } from "@jest/globals";
 
 import { recommendationRepository } from "../../src/repositories/recommendationRepository";
 import { recommendationService } from "../../src/services/recommendationsService";
-import { recommendationBodyFactory } from "../factories/recommendationFactory";
+import recommendationFactory, {
+  recommendationBodyFactory,
+} from "../factories/recommendationFactory";
 
 describe("Song recommendation service unit tests", () => {
   beforeEach(() => {
@@ -168,18 +170,95 @@ describe("Song recommendation service unit tests", () => {
   });
 
   describe("Get song recommendations", () => {
-    it.todo("should call repository and return 10 song recommendations");
+    it("should call repository and return song recommendations", async () => {
+      const expected = [];
+      for (let i = 1; i <= 3; i++) {
+        expected.push(recommendationFactory(4 * i));
+      }
+
+      jest
+        .spyOn(recommendationRepository, "findAll")
+        .mockResolvedValue(expected);
+
+      const recommendations = await recommendationService.get();
+
+      expect(recommendations).toBe(expected);
+    });
   });
 
   describe("Get top song recommendations", () => {
-    it.todo(
-      "should call repository and return an amount of top recommendations"
-    );
+    it("should call repository and return an amount of top recommendations", async () => {
+      const amount = 5;
+
+      const expected = [];
+      for (let i = 1; i <= amount; i++) {
+        const recommendation = recommendationFactory(7 * i - 3);
+        recommendation.score = 100 - 3 * i;
+        expected.push(recommendation);
+      }
+
+      const getAmountByScore = jest
+        .spyOn(recommendationRepository, "getAmountByScore")
+        .mockResolvedValue(expected);
+
+      const recommendations = await recommendationService.getTop(amount);
+
+      expect(recommendations).toBe(expected);
+      expect(getAmountByScore).toBeCalledWith(amount);
+    });
   });
 
   describe("Get a random song recommendation", () => {
-    it.todo("should call repository and return a well-voted recommendation");
-    it.todo("should call repository and return a poorly-voted recommendation");
-    it.todo("should throw 'not_found' if there is no recommendations");
+    it("should call repository and return a well-voted recommendation", async () => {
+      const expected = recommendationFactory(25);
+      expected.score = 88;
+
+      jest.spyOn(Math, "random").mockReturnValue(0.5);
+
+      const findAll = jest
+        .spyOn(recommendationRepository, "findAll")
+        .mockResolvedValue([expected]);
+
+      const recommendation = await recommendationService.getRandom();
+
+      expect(recommendation).toBe(expected);
+      expect(findAll).toBeCalledTimes(1);
+      expect(findAll).toBeCalledWith({ score: 10, scoreFilter: "gt" });
+    });
+
+    it("should call repository and return a poorly-voted recommendation", async () => {
+      const expected = recommendationFactory(25);
+      expected.score = 5;
+
+      jest.spyOn(Math, "random").mockReturnValue(0.8);
+
+      const findAll = jest
+        .spyOn(recommendationRepository, "findAll")
+        .mockResolvedValue([expected]);
+
+      const recommendation = await recommendationService.getRandom();
+
+      expect(recommendation).toBe(expected);
+      expect(findAll).toBeCalledTimes(1);
+      expect(findAll).toBeCalledWith({ score: 10, scoreFilter: "lte" });
+    });
+
+    it("should throw 'not_found' if there is no recommendations", async () => {
+      jest.spyOn(Math, "random").mockReturnValue(0.8);
+
+      const findAll = jest
+        .spyOn(recommendationRepository, "findAll")
+        .mockResolvedValue([]);
+
+      try {
+        await recommendationService.getRandom();
+      } catch (error) {
+        expect(error.type).toBe("not_found");
+      }
+
+      expect(findAll).toBeCalledTimes(2);
+      expect(findAll).toBeCalledWith({ score: 10, scoreFilter: "lte" });
+      expect(findAll).toBeCalledWith();
+    });
   });
 });
