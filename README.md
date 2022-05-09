@@ -33,3 +33,92 @@ The following libraries were used in the construction of front-end of the projec
   <img style='margin: 3px;' src="https://img.shields.io/badge/styled--components-DB7093?style=for-the-badge&logo=styled-components&logoColor=white" />
   <img style='margin: 3px;' src="https://img.shields.io/badge/Cypress-17202C?style=for-the-badge&logo=cypress&logoColor=white" />
 </div>
+
+## How to run
+
+To run this app, you start cloning this repository. Then, do the following steps to run the back-end:
+
+1. Change to the `back-end` repository
+2. Install dependencies
+
+```bash
+npm install
+```
+
+3. Set up the database using Prisma ORM
+
+```bash
+npm run migrate-dev
+```
+
+4. Run the app in development mode
+
+```bash
+npm run dev
+```
+
+Alternatively, you can set up the test database and run with this test database:
+
+```bash
+npm run migrate-test
+npm run dev-test
+```
+
+To run the app front-end you need to have its back-end already running. Do the following steps:
+
+1. Change to the `front-end` repository
+2. Install dependencies
+
+```bash
+npm install
+```
+
+3. Run the app in development mode
+
+```bash
+npm run start
+```
+
+## How to test
+
+To test this app, you start cloning this repository. Then, do the following steps to test the back-end.
+
+1. Change to the `back-end` repository
+2. Install dependencies
+
+```bash
+npm install
+```
+
+3. Set up the test database using Prisma ORM
+
+```bash
+npm run migrate-test
+```
+
+4. Populate the test database
+
+```bash
+npm run seed-db
+```
+
+5. Run the test
+
+```bash
+npm run test
+```
+
+To test the app front-end, you to have its back-end and front-end already running.
+
+1. Change to the `front-end` repository
+2. Install dependencies
+
+```
+npm install
+```
+
+3. Open Cypress
+
+```
+npx cypress open
+```
